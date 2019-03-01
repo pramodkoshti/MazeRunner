@@ -6,13 +6,11 @@ wn = turtle.Screen()
 wn.bgcolor("black")
 wn.title("Maze Runner")
 wn.setup(700,700)
-possible_direcetion = ["Left","Up","Right","Down"]
 
 turtle.register_shape("Maze_Block.gif")
 turtle.register_shape("player.gif")
 turtle.register_shape("Enter.gif")
 turtle.register_shape("Exit.gif")
-
 
 class Pen(turtle.Turtle):    
     def __init__(self):        
@@ -26,19 +24,23 @@ class Player(turtle.Turtle):
         self.shape("player.gif")
         self.penup()
         self.speed(1)
-        self.direction = "Left"
-        self.current_direction = possible_direcetion[0]       
+        self.direction = "Left"    
     
     
     def go_up(self):
         move_to_x = self.xcor()
         move_to_y = self.ycor() + 24
-        if(move_to_x,move_to_y) not in walls:            
+        if(move_to_x,move_to_y) in final_destination:
             self.goto(move_to_x,move_to_y)
-            self.direction = "Left"                        
+            self.speed(0)
+        elif(move_to_x,move_to_y) not in walls:            
+            self.goto(move_to_x,move_to_y)
+            self.direction = "Left" 
+            self.Move()        
         else:
             self.direction = "Right"
-        self.Move()
+            self.Move()
+        
         
     def go_down(self):
         move_to_x = self.xcor()
@@ -46,29 +48,44 @@ class Player(turtle.Turtle):
         if(move_to_x,move_to_y) not in walls:            
             self.goto(move_to_x,move_to_y)
             self.direction = "Right"
+            self.Move()
+        elif(move_to_x,move_to_y) in final_destination:
+            self.goto(move_to_x,move_to_y)
+            self.speed(0)
         else:
-            self.direction = "Down"
-        self.Move()
+            self.direction = "Left"
+            self.Move()
+        
         
     def go_right(self):
         move_to_x = self.xcor() + 24
         move_to_y = self.ycor()
-        if(move_to_x,move_to_y) not in walls:
+        if(move_to_x,move_to_y) in final_destination:
+            self.goto(move_to_x,move_to_y) 
+            self.speed(0)
+        elif(move_to_x,move_to_y) not in walls:            
+            self.goto(move_to_x,move_to_y)
             self.direction = "Up"
-            self.goto(move_to_x,move_to_y)               
+            self.Move()        
         else:
             self.direction = "Down"
-        self.Move()
+            self.Move()
+        
         
     def go_left(self):
         move_to_x = self.xcor() -24
         move_to_y = self.ycor()
-        if(move_to_x,move_to_y) not in walls:
-            self.goto(move_to_x,move_to_y)                        
-        else:
+        if(move_to_x,move_to_y) in final_destination:            
+            self.goto(move_to_x,move_to_y) 
+            self.speed(0)
+        elif(move_to_x,move_to_y) not in walls:
+            self.goto(move_to_x,move_to_y)
+            self.direction = "Down"
+            self.Move()       
+        else:            
             self.direction = "Up"
-        self.Move()
-        
+            self.Move()
+                
     def Move(self):
         if(self.direction == "Left"):                        
             self.go_left()
@@ -77,7 +94,7 @@ class Player(turtle.Turtle):
         elif(self.direction == "Right"):
             self.go_right()
         else:            
-            self.go_down()                            
+            self.go_down()            
         
 class In(turtle.Turtle):    
     def __init__(self):        
@@ -92,14 +109,17 @@ class Out(turtle.Turtle):
         self.shape("Exit.gif")
         self.penup()
         self.speed(0)
+    
+    def is_destination(self):
+        return self.xcor(), self.ycor()
         
 levels = [""]
 
 level_1 = ["XXXXXXXXXXXXXXXXXXXXXXXXX",
-           "X              X XXXXXXXX",
-           "X      XXXX             O",
-           "XXX XX XXX       X XXXXXX",
-           "X       XXXXX X  X  XX XX",
+           "X       X      X X XXXXXX",
+           "X      X XX             O",
+           "XXX XX X X       X XXXXXX",
+           "X           X X  X  XX XX",
            "X X XX XXXXXXX      XXXXX",
            "X X XXX  XXXXX   XXXXXXXX",
            "X        XXXXXX XX   XXXX",
@@ -112,13 +132,13 @@ level_1 = ["XXXXXXXXXXXXXXXXXXXXXXXXX",
            "X X X XXX  XXXXX  XXXXXXX",
            "X  XX XXXX XXXX  XXX    X",
            "XX           XXX XXXXXXXX",
-           "XX XX XXXXXX XXX XXXXXXXX",
-           "XX XX  XXXXX  XX     XXXX",
-           "XX  XX  X XXXX   XX  XXXX",
-           "XX  XX XXXXX   XXXX  XXXX",
-           "X  XXX       X X XX    XX",
+           "XX XXXXXXXXX XXX XXXXXXXX",
+           "XX XX X XXXX  XX     XXXX",
+           "XX  XX    XXXX   XX  XXXX",
+           "XX  XX X XXX   XXXX  XXXX",
+           "X  XXX  X    X X XX    XX",
            "X   XX   XXX X      X   X",
-           "XX         X           PX",
+           "XX                     PX",
            "XXXXXXXXXXXXXXXXXXXXXXXIX"
           ]
 levels.append(level_1)
@@ -141,18 +161,19 @@ def setup_maze(level):
             if(character == "O"):
                 out.goto(screen_x,screen_y)
                 pen.stamp()
-                walls.append((screen_x,screen_y))
+                final_destination.append((screen_x,screen_y))
             if(character == "I"):
                 inway.goto(screen_x,screen_y)                
                 pen.stamp()
                 walls.append((screen_x,screen_y))
 
 pen = Pen()
-player = Player()
 inway = In()
 out = Out()
+player = Player()
 
 walls = []
+final_destination = []
 
 setup_maze(level_1)
 player.Move()
